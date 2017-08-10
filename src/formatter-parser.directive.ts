@@ -4,7 +4,7 @@ import {
   forwardRef,
   HostListener,
   Input,
-  OnInit
+  AfterViewInit
 } from '@angular/core'
 import {
   ControlValueAccessor,
@@ -29,7 +29,7 @@ const CONTROL_VALUE_ACCESSOR = {
     CONTROL_VALUE_ACCESSOR
   ]
 })
-export class FormatterParserDirective implements ControlValueAccessor, OnInit {
+export class FormatterParserDirective implements ControlValueAccessor, AfterViewInit {
 
   @Input()
   formatterParser: IFormatterParserConfig;
@@ -49,11 +49,9 @@ export class FormatterParserDirective implements ControlValueAccessor, OnInit {
   private onTouch: Function;
   private onModelChange: Function;
 
-  constructor(
-    private _elementRef: ElementRef,
-    private fps: FormatterParserService,
-    private inputContext: InputContextService
-  ) {
+  constructor(private _elementRef: ElementRef,
+              private fps: FormatterParserService,
+              private inputContext: InputContextService) {
 
   }
 
@@ -65,7 +63,7 @@ export class FormatterParserDirective implements ControlValueAccessor, OnInit {
     this.onModelChange = fn;
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.inputElement = this.getInputElementRef();
     this.updateFormatterAndParser();
   }
@@ -104,8 +102,10 @@ export class FormatterParserDirective implements ControlValueAccessor, OnInit {
   writeValue(rawValue: any): void {
 
     // write value to view (visible text of the form control)
-    this.inputElement.value = this.formatterParserView
-      .reduce((state: any, transform: IFormatterParserFn) => transform(state).result, rawValue);
+    if (this.inputElement) {
+      this.inputElement.value = this.formatterParserView
+        .reduce((state: any, transform: IFormatterParserFn) => transform(state).result, rawValue);
+    }
 
     // write value to model (value stored in FormControl)
     const modelValue = this.formatterParserModel
